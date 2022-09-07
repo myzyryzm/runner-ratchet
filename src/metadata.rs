@@ -6,34 +6,8 @@ pub type TokenId = String;
 pub struct NFTContractMetadata {
     // required, essentially a version like "nft-1.0.0"
     pub spec: String,
-    // required, ex. "Mosaics"
     pub name: String,
     pub symbol: String,
-}
-
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct TokenMetadata {
-    pub nft_token_id: TokenId, // id of ratchet nft on nft contract
-    pub experience: u64,       // game specific experience
-}
-
-#[derive(BorshDeserialize, BorshSerialize)]
-pub struct Token {
-    // owner of token
-    pub owner_id: AccountId,
-}
-
-//The Json token is what will be returned from view calls.
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
-pub struct JsonToken {
-    // token id
-    pub token_id: TokenId,
-    // owner of the token
-    pub owner_id: AccountId,
-    // token metadata
-    pub metadata: TokenMetadata,
 }
 
 pub trait NonFungibleTokenMetadata {
@@ -65,4 +39,16 @@ pub struct RatchetMetadata {
 pub struct Ratchet {
     // owner of token
     pub owner_id: AccountId,
+}
+
+//The Json token is what will be returned from view calls.
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct JsonToken {
+    // token id
+    pub token_id: TokenId,
+    // owner of the token
+    pub owner_id: AccountId,
+    // token metadata
+    pub metadata: RatchetMetadata,
 }

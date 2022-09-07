@@ -7,29 +7,34 @@ const GAS_FOR_NFT_ON_TRANSFER: Gas = Gas(25_000_000_000_000);
 const NFT_CONTRACT: String = "nft.ratchet.testnet".to_string();
 
 pub trait RatchetCore {
-    fn set_new_owner(&mut self, receiver_id: AccountId, token_id: TokenId);
-
     fn update(&mut self, owner_id: AccountId, token_id: TokenId);
+
+    fn ratchet(&self, token_id: TokenId) -> Option<JsonToken>;
 }
 
 #[near_bindgen]
 impl RatchetCore for Contract {
-    fn set_new_owner(&mut self, receiver_id: AccountId, token_id: TokenId) {
-        let sender_id = env::predecessor_account_id();
-        assert_eq!(
-            sender_id, NFT_CONTRACT,
-            "This method can only be called from {}",
-            NFT_CONTRACT
-        );
-        let owner_id = env::signer_account_id();
-        self.internal_transfer(&owner_id, &receiver_id, &token_id);
-    }
-
     fn update(&mut self, owner_id: AccountId, token_id: TokenId, experience: u64) {
         assert_eq!(
             env::predecessor_account_id() == env::current_account_id(),
             "Only the contract account can update data."
         );
+    }
+
+    //get the information for a specific token ID
+    fn ratchet(&self, token_id: TokenId) -> Option<JsonToken> {
+        if let Some(ratchet) = self.ratchets_by_id.get(&token_id) {
+            // we'll get the metadata for that token
+            let metadata = self.ratchet_metadata_by_id.get(&token_id).unwrap();
+            Some(JsonToken {
+                token_id,
+                owner_id: ratchet.owner_id,
+                metadata,
+            })
+        } else {
+            // if there wasnt a token id in the tokens_by_id collection we return None
+            None
+        }
     }
 }
 
@@ -45,13 +50,13 @@ impl CallbacksExt for Contract {
             env::log_str("Unable to add to nft contract, rolling back...");
             // todo: need to check to make sure the token still exists (if somehow it was removed then these could fail)
             // remove token from owner
-            self.internal_remove_token_from_owner(&owner_id, &token_id);
+            self.ratchet_per_owner.remove(&owner_id);
             // remove token
-            self.tokens_by_id.remove(&token_id);
+            self.ratchets_by_id.remove(&token_id);
             // remove token metadata
-            self.token_metadata_by_id.remove(&token_id);
+            self.ratchet_metadata_by_id.remove(&token_id);
             // transfer funds back to user
-            Promise::new(owner_id).transfer(YOCTO_NEAR * MINT_COST);
+            Promise::new(owner_id).transfer(YOCTO_NEAR * RUNNER_MINT_COST);
             return false;
         }
         true
@@ -65,24 +70,33 @@ impl CallbacksExt for Contract {
     ) -> bool {
         if call_result.is_err() {
             env::log_str("Unable to create nft, rolling back...");
-            Promise::new(owner_id).transfer(YOCTO_NEAR * NFT_MINT_COST);
+            let total_cost = (RUNNER_MINT_COST + NFT_MINT_COST) * YOCTO_NEAR;
+            Promise::new(owner_id).transfer(total_cost);
             return false;
         }
+
         let token = Ratchet { owner_id: owner_id };
 
-        assert!(
-            self.ratchets_by_id.insert(&token_id, &token).is_none(),
-            "Token already exists"
-        );
+        if self.ratchets_by_id.contains_key(&token_id) {
+            Promise::new(owner_id).transfer(RUNNER_MINT_COST * YOCTO_NEAR);
+            env::panic_str("Ratchet with id already exists on runner contract");
+        }
+
+        if self.ratchet_per_owner.contains_key(&owner_id) {
+            Promise::new(owner_id).transfer(RUNNER_MINT_COST * YOCTO_NEAR);
+            env::panic_str("Owner already has a ratchet runner");
+        }
+
+        self.ratchets_by_id.insert(&token_id, &token);
+        self.ratchet_per_owner.insert(&owner_id, &token_id);
 
         let metadata = RatchetMetadata {
             nft_token_id: token_id,
             experience: 0,
         };
 
-        self.token_metadata_by_id.insert(&token_id, &metadata);
+        self.ratchet_metadata_by_id.insert(&token_id, &metadata);
 
-        self.internal_add_token_to_owner(&token.owner_id, &token_id);
         true
     }
 }
