@@ -9,7 +9,7 @@ const NFT_CONTRACT: String = "nft.ratchet.testnet".to_string();
 pub trait RatchetCore {
     fn update(&mut self, owner_id: AccountId, token_id: TokenId);
 
-    fn ratchet(&self, token_id: TokenId) -> Option<JsonToken>;
+    fn ratchet(&self, token_id: TokenId) -> Option<JsonRatchet>;
 }
 
 #[near_bindgen]
@@ -21,12 +21,12 @@ impl RatchetCore for Contract {
         );
     }
 
-    //get the information for a specific token ID
-    fn ratchet(&self, token_id: TokenId) -> Option<JsonToken> {
+    //get the information for a ratchet id
+    fn ratchet(&self, token_id: TokenId) -> Option<JsonRatchet> {
         if let Some(ratchet) = self.ratchets_by_id.get(&token_id) {
             // we'll get the metadata for that token
             let metadata = self.ratchet_metadata_by_id.get(&token_id).unwrap();
-            Some(JsonToken {
+            Some(JsonRatchet {
                 token_id,
                 owner_id: ratchet.owner_id,
                 metadata,

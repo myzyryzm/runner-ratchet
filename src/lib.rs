@@ -6,19 +6,19 @@ use near_sdk::{
     env, near_bindgen, AccountId, Balance, CryptoHash, PanicOnDefault, Promise, PromiseOrValue,
 };
 
-pub use crate::enumeration::*;
 pub use crate::external::*;
 pub use crate::internal::*;
 pub use crate::metadata::*;
-pub use crate::mint::*;
 pub use crate::ratchet_core::*;
+pub use crate::ratchet_enumeration::*;
+pub use crate::ratchet_mint::*;
 
-mod enumeration;
 mod external;
 mod internal;
 mod metadata;
-mod mint;
 mod ratchet_core;
+mod ratchet_enumeration;
+mod ratchet_mint;
 
 // Define the contract structure
 #[near_bindgen]
