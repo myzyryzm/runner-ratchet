@@ -9,7 +9,7 @@ const GAS_FOR_NFT_ON_TRANSFER: Gas = Gas(25_000_000_000_000);
 const NFT_CONTRACT: String = "nft.ratchet.testnet".to_string();
 
 pub trait RatchetCore {
-    fn update(
+    fn update_ratchet(
         &mut self,
         owner_id: AccountId,
         token_id: TokenId,
@@ -21,7 +21,7 @@ pub trait RatchetCore {
 
 #[near_bindgen]
 impl RatchetCore for Contract {
-    fn update(
+    fn update_ratchet(
         &mut self,
         owner_id: AccountId,
         token_id: TokenId,
@@ -55,6 +55,7 @@ impl RatchetCore for Contract {
             let msg = format!("Ratchet with id {} does not exist", token_id);
             env::panic_str(&msg);
         }
+        None
     }
 
     /// get the information for a ratchet id

@@ -28,6 +28,16 @@ pub struct AccountMetadata {
     pub progress: u64, // game specific progress
 }
 
+//The Json data is what will be returned from view account calls.
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct JsonAccount {
+    // owner of the account
+    pub owner_id: AccountId,
+    // account metadata
+    pub metadata: AccountMetadata,
+}
+
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct Ratchet {
     // owner of token

@@ -6,6 +6,8 @@ use near_sdk::{
     env, near_bindgen, AccountId, Balance, CryptoHash, PanicOnDefault, Promise, PromiseOrValue,
 };
 
+pub use crate::account_core::*;
+pub use crate::account_enumeration::*;
 pub use crate::account_mint::*;
 pub use crate::external::*;
 pub use crate::internal::*;
@@ -14,6 +16,8 @@ pub use crate::ratchet_core::*;
 pub use crate::ratchet_enumeration::*;
 pub use crate::ratchet_mint::*;
 
+mod account_core;
+mod account_enumeration;
 mod account_mint;
 mod external;
 mod internal;
@@ -32,7 +36,7 @@ pub struct Contract {
     pub metadata: LazyOption<ContractMetadata>,
 
     // keeps track of the metadata (e.g. the game progress) for each account
-    pub account_metadata_by_id: LookupMap<AccountId, AccountMetadata>,
+    pub account_metadata_by_id: UnorderedMap<AccountId, AccountMetadata>,
 
     // keeps track of all the ratchet tokens per id
     pub ratchet_per_owner: LookupMap<AccountId, TokenId>,
