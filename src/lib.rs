@@ -6,6 +6,7 @@ use near_sdk::{
     env, near_bindgen, AccountId, Balance, CryptoHash, PanicOnDefault, Promise, PromiseOrValue,
 };
 
+pub use crate::account_mint::*;
 pub use crate::external::*;
 pub use crate::internal::*;
 pub use crate::metadata::*;
@@ -13,6 +14,7 @@ pub use crate::ratchet_core::*;
 pub use crate::ratchet_enumeration::*;
 pub use crate::ratchet_mint::*;
 
+mod account_mint;
 mod external;
 mod internal;
 mod metadata;
@@ -27,7 +29,8 @@ pub struct Contract {
     // contract owner
     pub owner_id: AccountId,
     // keeps track of the metadata for the contract
-    pub metadata: LazyOption<NFTContractMetadata>,
+    pub metadata: LazyOption<ContractMetadata>,
+
     // keeps track of the metadata (e.g. the game progress) for each account
     pub account_metadata_by_id: LookupMap<AccountId, AccountMetadata>,
 
@@ -61,7 +64,7 @@ impl Contract {
     pub fn new_default_meta(owner_id: AccountId) -> Self {
         let this = Self {
             owner_id,
-            metadata: NFTContractMetadata {
+            metadata: ContractMetadata {
                 spec: "runner-1.0.0".to_string(),
                 name: " Ratchet Runner Contract".to_string(),
                 symbol: "runner".to_string(),
@@ -84,7 +87,7 @@ impl Contract {
         the owner_id.
     */
     #[init]
-    pub fn new(owner_id: AccountId, metadata: NFTContractMetadata) -> Self {
+    pub fn new(owner_id: AccountId, metadata: ContractMetadata) -> Self {
         let this = Self {
             owner_id,
             metadata: LazyOption::new(

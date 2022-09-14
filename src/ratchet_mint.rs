@@ -2,14 +2,15 @@ use crate::*;
 use near_sdk::Gas;
 
 pub const YOCTO_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
-pub const RUNNER_MINT_COST: u128 = 0.1; // cost to create a character
-pub const NFT_MINT_COST: u128 = 1;
+pub const RUNNER_MINT_COST: u128 = 0; // cost to create a character on this game
+pub const NFT_MINT_COST: u128 = 1; // cost to create the NFT version of character
 
 const GAS_FOR_CREATE_NFT: Gas = Gas(50_000_000_000_000);
 const GAS_FOR_RESOLVE_CREATE: Gas = Gas(50_000_000_000_000);
 
 #[near_bindgen]
 impl Contract {
+    // This method is for creating the ratchet nft character and then for creating the character on the game
     #[payable]
     pub fn full_mint_ratchet(&mut self, token_id: TokenId, receiver_id: AccountId) {
         assert!(
@@ -46,6 +47,7 @@ impl Contract {
         );
     }
 
+    // this is for creating the ratchet character to be used on the actual game; right now it costs money to add the character to the game but that is still up in the air
     #[payable]
     pub fn mint_ratchet(
         &mut self,
@@ -56,6 +58,8 @@ impl Contract {
     ) {
         let attached_deposit = env::attached_deposit();
         let required_cost = YOCTO_NEAR * RUNNER_MINT_COST;
+
+        // assert_one_yocto();
 
         assert!(
             required_cost == attached_deposit,
@@ -96,7 +100,7 @@ impl Contract {
         return promise.then(
             Self::ext(env::current_account_id())
                 .with_static_gas(GAS_FOR_RESOLVE_CREATE)
-                .add_to_nft_callback(token.owner_id, token_id),
+                .add_to_ratchet_nft_callback(token.owner_id, token_id),
         );
     }
 }

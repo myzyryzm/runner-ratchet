@@ -1,10 +1,10 @@
 use crate::*;
 use near_sdk::ext_contract;
 
-//
+/// Callbacks for
 #[ext_contract(this_contract)]
 trait Callbacks {
-    fn add_to_nft_callback(&mut self, owner_id: AccountId, token_id: TokenId) -> bool;
+    fn add_to_ratchet_nft_callback(&mut self, owner_id: AccountId, token_id: TokenId) -> bool;
 
     fn on_resolve_mint_callback(&mut self, owner_id: AccountId, token_id: TokenId) -> bool;
 }
